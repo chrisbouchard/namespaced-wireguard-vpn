@@ -29,13 +29,13 @@ namespaced-wireguard-vpn.target:
 {{{ git_dir_setup_macro }}}
 
 %install
-install --mode=755 --directory=%{buildroot}%{_libdir}/%{name}
+install --mode=755 --directory %{buildroot}%{_libdir}/%{name}
 install --mode=755 --target-directory=%{buildroot}%{_libdir}/%{name} lib/*
 
 install --mode=700 --directory %{buildroot}%{_sysconfdir}/%{name}
 install --mode=600 --target-directory=%{buildroot}%{_sysconfdir}/%{name} conf/*
 
-install --mode=755 --directory=%{buildroot}%{_unitdir}
+install --mode=755 --directory %{buildroot}%{_unitdir}
 install --mode=644 --target-directory=%{buildroot}%{_unitdir} systemd/*
 
 %post
