@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-case "$1"
+case "$1" in
     up)
         ip link add "$WIREGUARD_NAME" type wireguard || die
 

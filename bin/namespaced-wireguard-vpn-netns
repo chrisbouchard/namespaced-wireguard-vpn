@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-case "$1"
+case "$1" in
     up)
         ip netns add "$NETNS_NAME" || die
 

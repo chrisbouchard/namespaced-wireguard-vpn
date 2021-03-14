@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-case "$1"
+case "$1" in
     up)
         ip link add "$TUNNEL_INIT_NAME" type veth \
             peer "$TUNNEL_VPN_NAME" netns "$NETNS_NAME" || die
