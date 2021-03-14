@@ -14,6 +14,6 @@ RemainAfterExit=yes
 
 EnvironmentFile=/etc/namespaced-wireguard-vpn/namespaced-wireguard-vpn.conf
 
-ExecStart=/usr/lib/namespaced-wireguard-vpn/interface.sh up
-ExecStopPost=/usr/lib/namespaced-wireguard-vpn/interface.sh down
+ExecStart=/usr/sbin/namespaced-wireguard-vpn-interface up
+ExecStopPost=/usr/sbin/namespaced-wireguard-vpn-interface down
 
