@@ -1,0 +1,60 @@
+Name: {{{ git_dir_name }}}
+Version: {{{ git_dir_version }}}
+Release: 1%{?dist}
+Summary: Systemd configuration for a network namespace containing a WireGuard VPN connection
+
+License: MIT
+VCS: {{{ git_dir_vcs }}}
+
+Source: {{{ git_dir_pack }}}
+
+BuildRequires: systemd-rpm-macros
+Requires: bash, iproute2, systemd, xargs, wireguard-tools
+
+BuildArch: noarch
+
+%description
+This package contains configuration for Systemd to create and manage a network
+namespace containing a WireGuard VPN connection.
+
+namespaced-wireguard-vpn.target:
+  namespaced-wireguard-vpn-netns.service:
+    Creates the network namespace
+  namespaced-wireguard-vpn-interface.service:
+    Creates the WireGuard connection and moves it into the namespace
+  namespaced-wireguard-vpn-tunnel.service:
+    Creates a Veth tunnel into the namespace
+
+%prep
+{{{ git_dir_setup_macro }}}
+
+%install
+install --mode=755 --directory=%{buildroot}%{_libdir}/%{name}
+install --mode=755 --target-directory=%{buildroot}%{_libdir}/%{name} lib/*
+
+install --mode=700 --directory %{buildroot}%{_sysconfdir}/%{name}
+install --mode=600 --target-directory=%{buildroot}%{_sysconfdir}/%{name} conf/*
+
+install --mode=755 --directory=%{buildroot}%{_unitdir}
+install --mode=644 --target-directory=%{buildroot}%{_unitdir} systemd/*
+
+%post
+%systemd_post namespaced-wireguard-vpn.target
+
+%preun
+%systemd_preun namespaced-wireguard-vpn.target
+
+%postun
+%systemd_postun namespaced-wireguard-vpn.target
+
+%files
+%license LICENSE
+%{_libdir}/%{name}/*
+%dir %{_sysconfdir}/%{name}
+%config(noreplace) %{_sysconfdir}/%{name}/*
+%{_unitdir}/*
+
+%changelog
+{{{ git_dir_changelog }}}
+
+# vim: syntax=spec

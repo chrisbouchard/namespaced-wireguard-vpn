@@ -1,0 +1,28 @@
+[Unit]
+Description=VPN Tunnel Veth Interface
+PartOf=namespaced-wireguard-vpn.target
+Requires=namespaced-wireguard-vpn-netns.service
+After=vpn-netns.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+EnvironmentFile=/etc/namespaced-wireguard-vpn/namespaced-wireguard-vpn.conf
+
+ExecStart=/usr/lib/namespaced-wireguard-vpn/netns.sh up
+ExecStopPost=/usr/lib/namespaced-wireguard-vpn/netns.sh down
+
+ExecStart=/sbin/ip link add veth-vpn0 type veth peer name veth-vpn1 netns vpn
+# TODO: Extract these to configuration
+ExecStart=/sbin/ip address add 10.127.0.1/24 dev veth-vpn0
+ExecStart=/sbin/ip -n vpn address add 10.127.0.2/24 dev veth-vpn1
+ExecStart=/sbin/ip link set veth-vpn0 up
+ExecStart=/sbin/ip -n vpn link set veth-vpn1 up
+
+# TODO: What to do if the first one fails?
+ExecStop=/sbin/ip -n vpn link set veth-vpn1 down
+ExecStop=/sbin/ip link set veth-vpn0 down
+ExecStopPost=-/sbin/ip -n vpn link delete veth-vpn1
+ExecStopPost=-/sbin/ip link delete veth-vpn0
+

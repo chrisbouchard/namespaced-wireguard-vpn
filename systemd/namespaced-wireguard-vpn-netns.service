@@ -1,0 +1,19 @@
+# Based on:
+#     https://cloudnull.io/2019/04/running-services-in-network-name-spaces-with-systemd/
+
+[Unit]
+Description=VPN Network Namespace
+PartOf=namespaced-wireguard-vpn.target
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+PrivateNetwork=yes
+
+Environment=PRIVATE_NETNS_BIND_MOUNT=/proc/self/ns/net
+EnvironmentFile=/etc/namespaced-wireguard-vpn/namespaced-wireguard-vpn.conf
+
+ExecStart=/usr/lib/namespaced-wireguard-vpn/netns.sh up
+ExecStopPost=/usr/lib/namespaced-wireguard-vpn/netns.sh down
+

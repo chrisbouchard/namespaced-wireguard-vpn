@@ -1,0 +1,9 @@
+[Unit]
+Description=VPN Network Configuration Target
+Requires=namespaced-wireguard-vpn-interface.service
+Requires=namespaced-wireguard-vpn-netns.service
+Requires=namespaced-wireguard-vpn-tunnel.service
+
+[Install]
+WantedBy=multi-user.target
+
