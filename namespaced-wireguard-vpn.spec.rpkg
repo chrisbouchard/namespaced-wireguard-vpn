@@ -9,7 +9,7 @@ VCS: {{{ git_dir_vcs }}}
 Source: {{{ git_dir_pack }}}
 
 BuildRequires: systemd-rpm-macros
-Requires: bash, iproute2, systemd, xargs, wireguard-tools
+Requires: bash, findutils, iproute, systemd, wireguard-tools
 
 BuildArch: noarch
 
