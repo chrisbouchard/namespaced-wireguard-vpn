@@ -9,7 +9,7 @@ case "$1" in
     up)
         ip link add "$WIREGUARD_NAME" type wireguard || die
 
-        wg set \
+        wg set "$WIREGUARD_NAME" \
             private-key <(echo "$WIREGUARD_PRIVATE_KEY") \
             peer "$WIREGUARD_VPN_PUBLIC_KEY" \
                 endpoint "$WIREGUARD_ENDPOINT" \
