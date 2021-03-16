@@ -19,7 +19,7 @@ case "$1" in
 
         # Addresses are comma-separated, so to split them.
         xargs -d ',' -I '{}' \
-            ip -n "$NETNS_NAME" address add '{}' dev "$VPN_WIREGUARD_NAME" \
+            ip -n "$NETNS_NAME" address add '{}' dev "$WIREGUARD_NAME" \
             <<<"$WIREGUARD_IP_ADDRESSES" || die
 
         ip -n "$NETNS_NAME" link set "$WIREGUARD_NAME" up || die
