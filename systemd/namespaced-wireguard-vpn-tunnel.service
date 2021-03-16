@@ -2,7 +2,7 @@
 Description=VPN Tunnel Veth Interface
 PartOf=namespaced-wireguard-vpn.target
 Requires=namespaced-wireguard-vpn-netns.service
-After=vpn-netns.service
+After=namespaced-wireguard-vpn-netns.service
 
 [Service]
 Type=oneshot
