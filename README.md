@@ -8,13 +8,14 @@ Systemd configuration for a network namespace containing a WireGuard VPN connect
 
 This package is available from the
 [chrisbouchard/upliftinglemma][chrisbouchard/upliftinglemma] COPR. Assuming
-you're using a recent version of Fedora or CentOS:
+you're using a recent version of Fedora or CentOS, you can install using `dnf`.
 
 ```console
 $ dnf copr enable chrisbouchard/upliftinglemma
-# Agree to any interactive prompts
 $ dnf install namespaced-wireguard-vpn
 ```
+
+You may have to agree to some prompts if this is the first COPR you've enabled.
 
 ## Configuration
 
@@ -54,11 +55,18 @@ $ systemctl enable namespaced-wireguard-vpn.target
 
 At this point, if there are no errors, you should have a new network namespace
 (by default named `vpn`). You can test it out by running some commands in the
-namespace:
+default (init) namespace and VPN namespace and comparing the output.
 
 ```console
 $ curl ifconfig.me/ip
 $ ip netns exec $NETNS_NAME curl ifconfig.me/ip
+```
+
+You may want to confirm that DNS requests are going to your VPN's name servers.
+
+```console
+$ nslookup example.com
+$ ip netns exec $NETNS_NAME nslookup example.com
 ```
 
 ## Configuring Other Units to Run in the Namespace
@@ -68,7 +76,7 @@ useful to allow running other systemd units in a VPN-only namespace. This is acc
 adding a drop-in override file to the unit. In the following example, we'll configure
 Transmission Daemon to run in our namespace.
 
-### `/etc/systemd/system/transmission-daemon.service.d/10-vpn-netns.conf`:
+#### `/etc/systemd/system/transmission-daemon.service.d/10-vpn-netns.conf`:
 
 ```systemd
 [Unit]
