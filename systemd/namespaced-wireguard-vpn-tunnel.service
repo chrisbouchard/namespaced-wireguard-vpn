@@ -10,6 +10,6 @@ RemainAfterExit=yes
 
 EnvironmentFile=/etc/namespaced-wireguard-vpn/namespaced-wireguard-vpn.conf
 
-ExecStart=/usr/sbin/namespaced-wireguard-vpn-netns up
-ExecStopPost=/usr/sbin/namespaced-wireguard-vpn-netns down
+ExecStart=/usr/sbin/namespaced-wireguard-vpn-tunnel up
+ExecStopPost=/usr/sbin/namespaced-wireguard-vpn-tunnel down
 
