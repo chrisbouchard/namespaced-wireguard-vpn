@@ -11,12 +11,12 @@ case "$1" in
             peer "$TUNNEL_VPN_NAME" netns "$NETNS_NAME" || die
 
         # Addresses are comma-separated, so to split them.
-        xargs -d ',' -I '{}' \
-            ip address add '{}' dev "$TUNNEL_INIT_NAME" \
-            <<<"$TUNNEL_INIT_IP_ADDRESSES" || die
-        xargs -d ',' -I '{}' \
-            ip -n "$NETNS_NAME" address add '{}' dev "$TUNNEL_VPN_NAME" \
-            <<<"$TUNNEL_VPN_IP_ADDRESSES" || die
+        tr ',' '\n' <<<"$TUNNEL_INIT_IP_ADDRESSES" |
+            xargs -I '{}' \
+                ip address add '{}' dev "$TUNNEL_INIT_NAME" || die
+        tr ',' '\n' <<<"$TUNNEL_VPN_IP_ADDRESSES" |
+            xargs -I '{}' \
+                ip -n "$NETNS_NAME" address add '{}' dev "$TUNNEL_VPN_NAME" || die
 
         ip link set "$TUNNEL_INIT_NAME" up || die
         ip -n "$NETNS_NAME" link set "$TUNNEL_VPN_NAME" up || die
