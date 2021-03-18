@@ -26,6 +26,47 @@ WireGuard private key. The file will be read as a systemd environment file (see
 the [`EnvironmentFile=` directive in `systemd.exec(5)`][environmentfile=]). All
 expected values are set by default, most with dummy default values.
 
+#### Configuration Values
+
+- `NETNS_NAME`:
+  Name to assign to the created network namespace. Network namespace names are
+  system global, so it's important that this name be unique.
+- `WIREGUARD_NAME`:
+  Name to assign to the created WireGuard network interface. The interface is
+  created in the default (init) namespace then moved to the VPN namespace, so
+  the interface name must be unique in both.
+- `WIREGUARD_PRIVATE_KEY`:
+  Private key assigned by the VPN provider for your WireGuard connection. _This
+  is sensitive,_ so by default the configuration directory and file are only
+  readable by root.
+- `WIREGUARD_ENDPOINT`:
+  The endpoint of the VPN provider's WireGuard server.
+- `WIREGUARD_VPN_PUBLIC_KEY`:
+  The public key of the VPN provider's WireGuard peer.
+- `WIREGUARD_ALLOWED_IPS`:
+  Comma-separated list of IP addresses that may be contacted using the
+  WireGuard interface. For a namespaced VPN, where the goal is to force all
+  traffic through the VPN, the catch-all value `0.0.0.0/0,::0/0` is probably
+  correct.
+- `WIREGUARD_IP_ADDRESSES`:
+  Comma-separated list of static IP addresses to assign to the WireGuard
+  interface. As far as I know, WireGuard does not currently support DHCP or any
+  other form of dynamic IP address assignment.
+- `TUNNEL_INIT_NAME`:
+  Name to assign to the created tunnel (veth) network interface in the default
+  (init) network namespace.
+- `TUNNEL_INIT_IP_ADDRESSES`:
+  Comma-separated list of static IP addresses to assign to the tunnel interface
+  in the default (init) network namespace.
+- `TUNNEL_VPN_NAME`:
+  Name to assign to the created tunnel (veth) network interface in the VPN
+  network namespace.
+- `TUNNEL_VPN_IP_ADDRESSES`:
+  Comma-separated list of static IP addresses to assign to the tunnel interface
+  in the VPN network namespace.
+
+#### Namespace Overlay
+
 Most likely, there will be some additional configuration that you will want to
 make, particularly if your system uses `systemd-resolved` for domain name
 resolution. Since `systemd-resolved` uses a UNIX socket, it won't be namespaced
