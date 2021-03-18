@@ -129,6 +129,13 @@ JoinsNamespaceOf=namespaced-wireguard-vpn-netns.service
 PrivateNetwork=yes
 ```
 
+## Future Work/TODO
+
+- Consider using `sd_notify` for service scripts to provide a status.
+- Provide a way to disable the tunnel if desired.
+- Once systemd 247 is widely available (probably when Fedora 34 is released),
+  switch to using `LoadCredentials=` for the WireGuard private key.
+
 ## Contributing
 
 The configuration is geared for a Mullvad configuration, since that's the VPN I
