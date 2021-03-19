@@ -4,6 +4,36 @@
 
 Systemd configuration for a network namespace containing a WireGuard VPN connection
 
+## Overview
+
+```
+        I N T E R N E T
+              Λ :
+              | :
+              | :
++------------ | : ------------+    +-----------------------------------------------+
+| Init NS     | :             |    | VPN NS                                        |
+|          -- V --            |    |      --------                                 |
+|        / enp0s3  \ .................. / wg-vpn   \ .............                 |
+|        \ 1.2.3.4 <--------------------> 10.0.0.1 /             :                 |
+|          -------            |    |      --------       O------ : ------------O   |
+|                             |    |                     | transmission-daemon |   |
+|         ----------          |    |     ----------      O------------ : ------O   |
+|       / veth─init  <-----------------> veth─vpn   \                  :           |
+|       \ 10.127.0.1 / ............... \ 10.127.0.2 / .................:           |
+|         ----------          |    |     ----------                                |
+|              :              |    |                                               |
+|   O--------- : ---------O   |    +-----------------------------------------------+
+|   | transmission-remote |   |
+|   O---------------------O   |
+|                             |
++-----------------------------+
+```
+
+Rough illustration of the intended setup. See [Routing & Network Namespace
+Integration][wireguard-namespace] for a more thorough explanation of how
+WireGuard works across network namespaces.
+
 ## Installation
 
 This package is available from the
@@ -144,7 +174,8 @@ VPN setup that `wg-quick` could handle. If you need something more complicated,
 feel free to fork and open a merge request.
 
 [chrisbouchard/upliftinglemma]: https://copr.fedorainfracloud.org/coprs/chrisbouchard/upliftinglemma
-[namespaced-wireguard-vpn]: https://copr.fedorainfracloud.org/coprs/chrisbouchard/upliftinglemma/package/namespaced-wireguard-vpn/
-[namespaced-wireguard-vpn-status-img]: https://copr.fedorainfracloud.org/coprs/chrisbouchard/upliftinglemma/package/namespaced-wireguard-vpn/status_image/last_build.png
-[environmentfile=]: https://www.freedesktop.org/software/systemd/man/systemd.exec.html#EnvironmentFile=
 [dns-leaks-with-netns]: https://philipdeljanov.com/posts/2019/05/31/dns-leaks-with-network-namespaces/
+[environmentfile=]: https://www.freedesktop.org/software/systemd/man/systemd.exec.html#EnvironmentFile=
+[namespaced-wireguard-vpn-status-img]: https://copr.fedorainfracloud.org/coprs/chrisbouchard/upliftinglemma/package/namespaced-wireguard-vpn/status_image/last_build.png
+[namespaced-wireguard-vpn]: https://copr.fedorainfracloud.org/coprs/chrisbouchard/upliftinglemma/package/namespaced-wireguard-vpn/
+[wireguard-namespace]: https://www.wireguard.com/netns/
