@@ -82,6 +82,10 @@ expected values are set by default, most with dummy default values.
   Comma-separated list of static IP addresses to assign to the WireGuard
   interface. As far as I know, WireGuard does not currently support DHCP or any
   other form of dynamic IP address assignment.
+- `TUNNEL_ENABLE`:
+  Whether to create the tunnel (veth) network interface between the default
+  (init) and VPN network namespaces. Set to zero to disable or nonzero to
+  enable.
 - `TUNNEL_INIT_NAME`:
   Name to assign to the created tunnel (veth) network interface in the default
   (init) network namespace.
@@ -94,6 +98,12 @@ expected values are set by default, most with dummy default values.
 - `TUNNEL_VPN_IP_ADDRESSES`:
   Comma-separated list of static IP addresses to assign to the tunnel interface
   in the VPN network namespace.
+  
+#### Tunnel
+
+This package provides a tunnel between the init namesapce and the created VPN
+namespace so, e.g., you can control services inside the VPN namespace from
+outside. If you don't need or want the tunnel, just set `TUNNEL_ENABLE=0`.
 
 #### Namespace Overlay
 
@@ -162,7 +172,6 @@ PrivateNetwork=yes
 ## Future Work/TODO
 
 - Consider using `sd_notify` for service scripts to provide a status.
-- Provide a way to disable the tunnel if desired.
 - Once systemd 247 is widely available (probably when Fedora 34 is released),
   switch to using `LoadCredentials=` for the WireGuard private key.
 
