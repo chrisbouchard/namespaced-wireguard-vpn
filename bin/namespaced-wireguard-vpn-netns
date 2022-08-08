@@ -7,7 +7,10 @@ die() {
 
 case "$1" in
     up)
-        ip netns add "$NETNS_NAME" || die
+        for name in $NETNS_NAME
+        do
+            ip netns add $name || die
+        done
 
         if [[ -n "$PRIVATE_NETNS_BIND_MOUNT" ]]
         then
@@ -15,11 +18,17 @@ case "$1" in
             mount --bind "$PRIVATE_NETNS_BIND_MOUNT" "/var/run/netns/$NETNS_NAME" || die
         fi
 
-        ip -n "$NETNS_NAME" link set lo up || die
+        for name in $NETNS_NAME
+        do
+            ip -n $name link set lo up || die
+        done
         ;;
 
     down)
-        ip netns delete "$NETNS_NAME" || die
+        for name in $NETNS_NAME
+        do
+            ip netns delete $name || die
+        done
         ;;
 esac
 

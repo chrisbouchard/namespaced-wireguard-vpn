@@ -5,36 +5,55 @@ die() {
     exit 1
 }
 
+netns_names=($NETNS_NAME)
+wg_names=($WIREGUARD_NAME)
+wg_private_keys=($WIREGUARD_PRIVATE_KEY)
+wg_vpn_public_keys=($WIREGUARD_VPN_PUBLIC_KEY)
+wg_endpoints=($WIREGUARD_ENDPOINT)
+
 case "$1" in
     up)
-        ip link add "$WIREGUARD_NAME" type wireguard || die
+        pre_netns=""
+        allowed_ips="0.0.0.0/0,::0/0"
+        for (( i=0; i<${#netns_names[*]}; ++i))
+        do
+            ip $pre_netns link add "${wg_names[$i]}" type wireguard || die
 
-        wg set "$WIREGUARD_NAME" \
-            private-key <(echo "$WIREGUARD_PRIVATE_KEY") \
-            peer "$WIREGUARD_VPN_PUBLIC_KEY" \
-                endpoint "$WIREGUARD_ENDPOINT" \
-                allowed-ips "$WIREGUARD_ALLOWED_IPS" || die
+            if [ $(( $i + 1 )) -eq ${#netns_names[*]} ]
+            then
+                allowed_ips="$WIREGUARD_ALLOWED_IPS"
+            fi
 
-        ip link set "$WIREGUARD_NAME" netns "$NETNS_NAME" || die
+            wg set "${wg_names[$i]}" \
+                private-key <(echo "${wg_private_keys[$i]}") \
+                peer "${wg_vpn_public_keys[$i]}" \
+                    endpoint "${wg_endpoints[$i}" \
+                    allowed-ips "$allowed_ips" || die
 
-        # Addresses are comma-separated, so to split them.
-        tr ',' '\n' <<<"$WIREGUARD_IP_ADDRESSES" |
-            xargs -I '{}' \
-                ip -n "$NETNS_NAME" address add '{}' dev "$WIREGUARD_NAME" || die
+            ip link set "${wg_names[$i]}" netns "${netns_names[$i]}" || die
 
-        ip -n "$NETNS_NAME" link set "$WIREGUARD_NAME" up || die
+            # Addresses are comma-separated, so to split them.
+            tr ',' '\n' <<<"$WIREGUARD_IP_ADDRESSES" |
+                xargs -I '{}' \
+                    ip -n "${netns_names[$i]}" address add '{}' dev "${wg_names[$i]}" || die
 
-        # Add default routes for IPv4 and IPv6
-        ip -n "$NETNS_NAME" -4 route add default dev "$WIREGUARD_NAME" || die
-        ip -n "$NETNS_NAME" -6 route add default dev "$WIREGUARD_NAME" || die
+            ip -n "${netns_names[$i]}" link set "${wg_names[$i]}" up || die
+
+            # Add default routes for IPv4 and IPv6
+            ip -n "${netns_names[$i]}" -4 route add default dev "${wg_names[$i]}" || die
+            ip -n "${netns_names[$i]}" -6 route add default dev "${wg_names[$i]}" || die
+            pre_netns="-n ${netns_names[$i]}"
+        done
         ;;
-
     down)
         # We need to delete the WireGuard interface. It's initially created in
         # the init network namespace, then moved to the VPN namespace.
         # Depending how well the "up" operation went, it might be in either.
-        ip -n "$NETNS_NAME" link delete "$WIREGUARD_NAME" ||
-            ip link delete "$WIREGUARD_NAME" || die
+        for (( i=${#netns_names[*]}; i>=0; --i))
+        do
+            ip -n "${netns_names[$i]}" link delete "${wg_names[$i]}" ||
+                ip link delete "${wg_names[$i]}" || die
+        done
         ;;
 esac
 
