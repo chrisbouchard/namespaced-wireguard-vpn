@@ -10,18 +10,16 @@ case "$1" in
         for name in $NETNS_NAME
         do
             ip netns add $name || die
+
+            ip -n $name link set lo up || die
+            last=$name
         done
 
         if [[ -n "$PRIVATE_NETNS_BIND_MOUNT" ]]
         then
-            umount "/var/run/netns/$NETNS_NAME" || die
-            mount --bind "$PRIVATE_NETNS_BIND_MOUNT" "/var/run/netns/$NETNS_NAME" || die
+            umount "/var/run/netns/$last" || die
+            mount --bind "$PRIVATE_NETNS_BIND_MOUNT" "/var/run/netns/$last" || die
         fi
-
-        for name in $NETNS_NAME
-        do
-            ip -n $name link set lo up || die
-        done
         ;;
 
     down)

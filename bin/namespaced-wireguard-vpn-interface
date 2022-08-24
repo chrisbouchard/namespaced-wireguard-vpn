@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o xtrace
+
 die() {
     echo "${BASH_SOURCE[1]}: line ${BASH_LINENO[0]}: ${FUNCNAME[1]}: ${1:-Died}" >&2
     exit 1
@@ -24,13 +26,14 @@ case "$1" in
                 allowed_ips="$WIREGUARD_ALLOWED_IPS"
             fi
 
-            wg set "${wg_names[$i]}" \
+            ip $pre_netns link set "${wg_names[$i]}" netns "${netns_names[$i]}" || die
+
+            ip netns exec "${netns_names[$i]}" wg set "${wg_names[$i]}" \
                 private-key <(echo "${wg_private_keys[$i]}") \
                 peer "${wg_vpn_public_keys[$i]}" \
-                    endpoint "${wg_endpoints[$i}" \
+                    endpoint "${wg_endpoints[$i]}" \
                     allowed-ips "$allowed_ips" || die
 
-            ip link set "${wg_names[$i]}" netns "${netns_names[$i]}" || die
 
             # Addresses are comma-separated, so to split them.
             tr ',' '\n' <<<"$WIREGUARD_IP_ADDRESSES" |
