@@ -34,6 +34,39 @@ Rough illustration of the intended setup. See [Routing & Network Namespace
 Integration][wireguard-namespace] for a more thorough explanation of how
 WireGuard works across network namespaces.
 
+If multiple layered VPN connections are used, a layout such as the one below 
+will be created. This is useful for additional privacy, as multiple VPN providers
+would need to be compromised for any information to be leaked. Assuming none of 
+the VPN providers is a bottleneck, each additional layer only reduces the
+performance achievable by about 10% due to protocol overheads.
+```
+        I N T E R N E T
+              Λ :
+              | :
+              | :
++------------ | : ------------+    +-------------------+
+| Init NS     | :             |    | VPN NS1           |
+|          -- V --            |    |      --------     |
+|        / enp0s3  \ .................. / wg-vpn1  \.....................
+|        \ 1.2.3.4 <--------------------> 10.0.0.1 <-------------------+:
+|          -------            |    |      --------     |               |:
+|                             |    |                   |               |:
+|   O---------------------O   |    +-------------------+               |:
+|   | transmission-remote |   |                                        |:
+|   O---------:-----------O   |    +-----------------------------------|:--------+
+|             :               |    | VPN NS2                           |:        |
+|         ----------          |    |      ----------               ----v---      |
+|       / veth─init  <------------------> veth-vpn   \           / wg-vpn2  \    |
+|       \ 10.127.0.1 / .................\ 10.127.0.2 /           \ 10.0.0.1 /    |
+|         ----------          |    |      ----------               --------      |
+|                             |    |             :                 :             |
++-----------------------------+    |           O : --------------- : O           |
+                                   |           | transmission-daemon |           |
+                                   |           O---------------------O           |
+                                   |                                             |
+                                   +---------------------------------------------+
+```
+
 ## Installation
 
 This package is available from the
@@ -61,18 +94,23 @@ expected values are set by default, most with dummy default values.
 - `NETNS_NAME`:
   Name to assign to the created network namespace. Network namespace names are
   system global, so it's important that this name be unique.
+  For using multiple layers, use multiple names separated by spaces.
 - `WIREGUARD_NAME`:
   Name to assign to the created WireGuard network interface. The interface is
   created in the default (init) namespace then moved to the VPN namespace, so
   the interface name must be unique in both.
+  For using multiple layers, use multiple names separated by spaces.
 - `WIREGUARD_PRIVATE_KEY`:
   Private key assigned by the VPN provider for your WireGuard connection. _This
   is sensitive,_ so by default the configuration directory and file are only
   readable by root.
+  For using multiple layers, set multiple private keys separated by spaces.
 - `WIREGUARD_ENDPOINT`:
   The endpoint of the VPN provider's WireGuard server.
+  For using multiple layers, set multiple endpoints separated by spaces.
 - `WIREGUARD_VPN_PUBLIC_KEY`:
   The public key of the VPN provider's WireGuard peer.
+  For using multiple layers, set multiple public keys separated by spaces.
 - `WIREGUARD_ALLOWED_IPS`:
   Comma-separated list of IP addresses that may be contacted using the
   WireGuard interface. For a namespaced VPN, where the goal is to force all
@@ -82,6 +120,10 @@ expected values are set by default, most with dummy default values.
   Comma-separated list of static IP addresses to assign to the WireGuard
   interface. As far as I know, WireGuard does not currently support DHCP or any
   other form of dynamic IP address assignment.
+- `WIREGUARD_INITIAL_MTU`:
+  MTU of the wireguard interface. Only applies to the initial layer if using
+  multiple layers. Subsequent layers will have their MTUs reduced by 80 such
+  as to avoid fragmentation or packet loss.
 - `TUNNEL_ENABLE`:
   Whether to create the tunnel (veth) network interface between the default
   (init) and VPN network namespaces. Set to zero to disable or nonzero to
@@ -117,8 +159,9 @@ leak information.
 Linux network namespaces allow you to add configuration files in
 `/etc/netns/$NETNS_NAME`, which will replace the existing configuration file
 for processes running inside the namespace. I'd recommend overriding
-`nsswitch.conf` and `resolv.conf` to use your VPN provider's name servers. See
-[DNS Leaks with Network Namespaces][dns-leaks-with-netns] for more detail.
+`nsswitch.conf` and `resolv.conf` to use your VPN provider's name servers. 
+If using multiple namespaces, this must be done for each seperately.
+See [DNS Leaks with Network Namespaces][dns-leaks-with-netns] for more detail.
 
 ## Running
 
