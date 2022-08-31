@@ -17,9 +17,12 @@ case "$1" in
     up)
         pre_netns=""
         allowed_ips="0.0.0.0/0,::0/0"
+        mtu="$WIREGUARD_INITIAL_MTU"
         for (( i=0; i<${#netns_names[*]}; ++i))
         do
-            ip $pre_netns link add "${wg_names[$i]}" type wireguard || die
+            ip $pre_netns link add "${wg_names[$i]}" mtu $mtu type wireguard || die
+            # reduction for worse-case scenario of IPv6
+            mtu=$(($mtu - 80)) 
 
             if [ $(( $i + 1 )) -eq ${#netns_names[*]} ]
             then
@@ -44,7 +47,10 @@ case "$1" in
 
             # Add default routes for IPv4 and IPv6
             ip -n "${netns_names[$i]}" -4 route add default dev "${wg_names[$i]}" || die
-            ip -n "${netns_names[$i]}" -6 route add default dev "${wg_names[$i]}" || die
+            if ip -o -6 -a | grep "${wg_names[$i]}"
+            then
+                ip -n "${netns_names[$i]}" -6 route add default dev "${wg_names[$i]}" || die
+            fi
             pre_netns="-n ${netns_names[$i]}"
         done
         ;;
