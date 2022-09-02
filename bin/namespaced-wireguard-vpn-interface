@@ -58,7 +58,7 @@ case "$1" in
         # We need to delete the WireGuard interface. It's initially created in
         # the init network namespace, then moved to the VPN namespace.
         # Depending how well the "up" operation went, it might be in either.
-        for (( i=${#netns_names[*]}; i>=0; --i))
+        for (( i=$((${#netns_names[*]} - 1)); i>=0; --i))
         do
             ip -n "${netns_names[$i]}" link delete "${wg_names[$i]}" ||
                 ip link delete "${wg_names[$i]}" || die

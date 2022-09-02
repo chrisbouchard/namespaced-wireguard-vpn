@@ -5,8 +5,8 @@ die() {
     exit 1
 }
 
-arr=($NETNS_NAME)
-main_netns=${arr[-1]}
+netns_names=($NETNS_NAME)
+main_netns=${netns_names[-1]}
 
 case "$1" in
     up)
