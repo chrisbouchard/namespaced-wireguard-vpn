@@ -10,6 +10,8 @@ RemainAfterExit=yes
 
 EnvironmentFile=/etc/namespaced-wireguard-vpn/namespaced-wireguard-vpn.conf
 
+ExecCondition=/usr/bin/test "$TUNNEL_ENABLE" -ne 0
+
 ExecStart=/usr/sbin/namespaced-wireguard-vpn-tunnel up
 ExecStopPost=/usr/sbin/namespaced-wireguard-vpn-tunnel down
 
