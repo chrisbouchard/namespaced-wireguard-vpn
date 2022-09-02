@@ -7,7 +7,7 @@ die() {
 
 case "$1" in
     up)
-        ip link add "$WIREGUARD_NAME" type wireguard || die
+        ip link add "$WIREGUARD_NAME" mtu $WIREGUARD_INITIAL_MTU type wireguard || die
 
         wg set "$WIREGUARD_NAME" \
             private-key <(echo "$WIREGUARD_PRIVATE_KEY") \
@@ -23,7 +23,13 @@ case "$1" in
                 ip -n "$NETNS_NAME" address add '{}' dev "$WIREGUARD_NAME" || die
 
         ip -n "$NETNS_NAME" link set "$WIREGUARD_NAME" up || die
-        ip -n "$NETNS_NAME" route add default dev "$WIREGUARD_NAME" || die
+
+        # Add default routes for IPv4 and IPv6
+        ip -n "$NETNS_NAME" -4 route add default dev "$WIREGUARD_NAME" || die
+        if ip -o -6 -a | grep -q "$WIREGUARD_NAME"
+        then 
+            ip -n "$NETNS_NAME" -6 route add default dev "$WIREGUARD_NAME" || die
+        fi
         ;;
 
     down)

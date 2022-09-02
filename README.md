@@ -78,6 +78,8 @@ expected values are set by default, most with dummy default values.
   WireGuard interface. For a namespaced VPN, where the goal is to force all
   traffic through the VPN, the catch-all value `0.0.0.0/0,::0/0` is probably
   correct.
+- `WIREGUARD_INITIAL_MTU`:
+  MTU of the wireguard interface. Choosing too large a value risks packet loss.
 - `WIREGUARD_IP_ADDRESSES`:
   Comma-separated list of static IP addresses to assign to the WireGuard
   interface. As far as I know, WireGuard does not currently support DHCP or any
