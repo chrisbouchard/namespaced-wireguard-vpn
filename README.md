@@ -109,6 +109,22 @@ This package provides a tunnel between the init namesapce and the created VPN
 namespace so, e.g., you can control services inside the VPN namespace from
 outside. If you don't need or want the tunnel, just set `TUNNEL_ENABLE=0`.
 
+##### iptables rules
+
+To control the services from outside the VPN as though they were running in the
+physical namespace, rather than only having the accessible from this host, a 
+few iptables rules are required. Here I'm assuming that `net.ipv4.ip_forward=1`
+and that the `FORWARD` table is allowing forwarding between interfaces. 
+```
+iptables -t nat -A PREROUTING -i [PHYSICAL] -p tcp -m tcp --dport [PORT] -j DNAT --to-destination [TUNNEL_VPN_IP_ADDRESSES]:[PORT]
+iptables -t nat -A POSTROUTING -d [TUNNEL_VPN_IP_ADDRESSES] -o [TUNNEL_VPN_NAME] -p tcp -m tcp --dport [PORT] -j MASQUERADE
+```
+For example with the standard settings to forward port 8000 from `eth0` you may use
+```
+iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 8000 -j DNAT --to-destination 10.127.0.2:8000
+iptables -t nat -A POSTROUTING -d 10.127.0.2/32 -o veth-vpn0 -p tcp -m tcp --dport 8000 -j MASQUERADE
+```
+
 #### Namespace Overlay
 
 Most likely, there will be some additional configuration that you will want to
