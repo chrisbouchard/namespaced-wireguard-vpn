@@ -159,7 +159,10 @@ $ ip netns exec $NETNS_NAME nslookup example.com
 While `ip netns exec` is handy for one-off commands, this project is most
 useful to allow running other systemd units in a VPN-only namespace. This is accomplished by
 adding a drop-in override file to the unit. In the following example, we'll configure
-Transmission Daemon to run in our namespace.
+Transmission Daemon to run in our namespace. Beware that is used in conjunction with the 
+`nsswitch.conf` and `resolv.conf` tweaks above this will not work correctly, as systemd
+does not mount them into the right locations. There using `ip netns exec` may be more
+appropriate.
 
 #### `/etc/systemd/system/transmission-daemon.service.d/10-vpn-netns.conf`:
 
