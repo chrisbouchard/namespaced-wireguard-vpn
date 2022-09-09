@@ -73,6 +73,8 @@ expected values are set by default, most with dummy default values.
   The endpoint of the VPN provider's WireGuard server.
 - `WIREGUARD_VPN_PUBLIC_KEY`:
   The public key of the VPN provider's WireGuard peer.
+- `WIREGUARD_VPN_PPRESHARED_KEY`:
+  The preshared key of the VPN provider's WireGuard peer. Set to - to disable.
 - `WIREGUARD_ALLOWED_IPS`:
   Comma-separated list of IP addresses that may be contacted using the
   WireGuard interface. For a namespaced VPN, where the goal is to force all
