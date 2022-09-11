@@ -73,6 +73,8 @@ expected values are set by default, most with dummy default values.
   The endpoint of the VPN provider's WireGuard server.
 - `WIREGUARD_VPN_PUBLIC_KEY`:
   The public key of the VPN provider's WireGuard peer.
+- `WIREGUARD_VPN_PPRESHARED_KEY`:
+  The preshared key of the VPN provider's WireGuard peer. Set to - to disable.
 - `WIREGUARD_ALLOWED_IPS`:
   Comma-separated list of IP addresses that may be contacted using the
   WireGuard interface. For a namespaced VPN, where the goal is to force all
@@ -106,6 +108,22 @@ expected values are set by default, most with dummy default values.
 This package provides a tunnel between the init namesapce and the created VPN
 namespace so, e.g., you can control services inside the VPN namespace from
 outside. If you don't need or want the tunnel, just set `TUNNEL_ENABLE=0`.
+
+##### iptables rules
+
+To control the services from outside the VPN as though they were running in the
+physical namespace, rather than only having the accessible from this host, a 
+few iptables rules are required. Here I'm assuming that `net.ipv4.ip_forward=1`
+and that the `FORWARD` table is allowing forwarding between interfaces. 
+```
+iptables -t nat -A PREROUTING -i [PHYSICAL] -p tcp -m tcp --dport [PORT] -j DNAT --to-destination [TUNNEL_VPN_IP_ADDRESSES]:[PORT]
+iptables -t nat -A POSTROUTING -d [TUNNEL_VPN_IP_ADDRESSES] -o [TUNNEL_VPN_NAME] -p tcp -m tcp --dport [PORT] -j MASQUERADE
+```
+For example with the standard settings to forward port 8000 from `eth0` you may use
+```
+iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 8000 -j DNAT --to-destination 10.127.0.2:8000
+iptables -t nat -A POSTROUTING -d 10.127.0.2/32 -o veth-vpn0 -p tcp -m tcp --dport 8000 -j MASQUERADE
+```
 
 #### Namespace Overlay
 
@@ -157,7 +175,10 @@ $ ip netns exec $NETNS_NAME nslookup example.com
 While `ip netns exec` is handy for one-off commands, this project is most
 useful to allow running other systemd units in a VPN-only namespace. This is accomplished by
 adding a drop-in override file to the unit. In the following example, we'll configure
-Transmission Daemon to run in our namespace.
+Transmission Daemon to run in our namespace. Beware that is used in conjunction with the 
+`nsswitch.conf` and `resolv.conf` tweaks above this will not work correctly, as systemd
+does not mount them into the right locations. There using `ip netns exec` may be more
+appropriate.
 
 #### `/etc/systemd/system/transmission-daemon.service.d/10-vpn-netns.conf`:
 

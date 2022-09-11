@@ -9,11 +9,21 @@ case "$1" in
     up)
         ip link add "$WIREGUARD_NAME" mtu $WIREGUARD_INITIAL_MTU type wireguard || die
 
-        wg set "$WIREGUARD_NAME" \
-            private-key <(echo "$WIREGUARD_PRIVATE_KEY") \
-            peer "$WIREGUARD_VPN_PUBLIC_KEY" \
-                endpoint "$WIREGUARD_ENDPOINT" \
-                allowed-ips "$WIREGUARD_ALLOWED_IPS" || die
+        if [ "$WIREGUARD_VPN_PRESHARED_KEY" == "-" ]
+        then
+            wg set "$WIREGUARD_NAME" \
+                private-key <(echo "$WIREGUARD_PRIVATE_KEY") \
+                peer "$WIREGUARD_VPN_PUBLIC_KEY" \
+                    endpoint "$WIREGUARD_ENDPOINT" \
+                    allowed-ips "$WIREGUARD_ALLOWED_IPS" || die
+        else
+            wg set "$WIREGUARD_NAME" \
+                private-key <(echo "$WIREGUARD_PRIVATE_KEY") \
+                peer "$WIREGUARD_VPN_PUBLIC_KEY" \
+                preshared-key <(echo "$WIREGUARD_VPN_PRESHARED_KEY") \
+                    endpoint "$WIREGUARD_ENDPOINT" \
+                    allowed-ips "$WIREGUARD_ALLOWED_IPS" || die
+        fi
 
         ip link set "$WIREGUARD_NAME" netns "$NETNS_NAME" || die
 
