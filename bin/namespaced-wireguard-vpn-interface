@@ -26,7 +26,7 @@ case "$1" in
 
         # Add default routes for IPv4 and IPv6
         ip -n "$NETNS_NAME" -4 route add default dev "$WIREGUARD_NAME" || die
-        if ip -o -6 -a | grep -q "$WIREGUARD_NAME"
+        if ip -o -6 a | grep -q "$WIREGUARD_NAME"
         then 
             ip -n "$NETNS_NAME" -6 route add default dev "$WIREGUARD_NAME" || die
         fi
