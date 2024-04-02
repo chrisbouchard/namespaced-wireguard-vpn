@@ -10,6 +10,7 @@ After=network.target
 Type=oneshot
 RemainAfterExit=yes
 PrivateNetwork=yes
+PrivateMounts=no
 
 Environment=PRIVATE_NETNS_BIND_MOUNT=/proc/self/ns/net
 EnvironmentFile=/etc/namespaced-wireguard-vpn/namespaced-wireguard-vpn.conf
